@@ -30,8 +30,11 @@ def ssd_event(session: SessionStateProxy):
         st.info(f"Mock SSD: {cfg.ssd.mock_name}")
 
     elif cfg.ssd.mode == "detect":
-        # disks = handlers.ssd.detect()
-        disks = handlers.ssd.mock_detect(ismart_path=cfg.ssd.ismart_path)
+        if cfg.debug:
+            disks = handlers.ssd.mock_detect(ismart_path=cfg.ssd.ismart_path)
+        else:
+            disks = handlers.ssd.detect(ismart_path=cfg.ssd.ismart_path)
+
         handlers.ssd.valid_detected_disks(disks=disks)
         st.selectbox(label="Select SSD", options=disks, index=0, key=SSD_DETECT_SEL)
 
@@ -44,8 +47,10 @@ def aida_event(session: SessionStateProxy):
     logger.info("Run AIDA Event")
     # Run AIDA
     with st.spinner("Running AIDA64"):
-        # handlers.aida.run_cmd(aida_exec_path=cfg.aida.exec_path)
-        handlers.aida.mock_run_cmd(output_dir=cfg.aida.out_dir)
+        if cfg.debug:
+            handlers.aida.mock_run_cmd(output_dir=cfg.aida.out_dir)
+        else:
+            handlers.aida.run_cmd(aida_exec_path=cfg.aida.exec_path)
     # Verify Folder
     gen_folders = handlers.aida.get_output_dir(cfg.aida.out_dir, cfg.aida.dir_kw)
     handlers.aida.valid_aida_output_folder(gen_folders)
@@ -181,7 +186,10 @@ def generatic_report_event(
     logger.info("Start Generatice Report")
     # Get Basic Information
     cfg: config.Config = session[CFG]
-    ground_truth = session[SSD_DETECT_SEL]
+    if cfg.ssd.mode == "detect":
+        ground_truth = session[SSD_DETECT_SEL]
+    else:
+        ground_truth = cfg.ssd.mock_name
     timestamp = handlers.reporter.get_timetamp()
     model_info_map = {
         "read": get_model_info(cfg.ivit.models.read),
@@ -212,7 +220,10 @@ def validator_report_event(
 ):
     logger.info("Start Validator Report")
     logger.info("Finished Validator Report")
-    ground_truth = session[SSD_DETECT_SEL]
+    if cfg.ssd.mode == "detect":
+        ground_truth = session[SSD_DETECT_SEL]
+    else:
+        ground_truth = cfg.ssd.mock_name
     timestamp = handlers.reporter.get_timetamp()
 
     def report_wrapper(infer_data):
@@ -237,7 +248,10 @@ def none_ivit_report_event(session: SessionStateProxy):
     logger.info("Start None iVIT Report")
     cfg: config.Config = session[CFG]
     read_inputs, write_inputs = handlers.aida.get_data(session[CFG])
-    ground_truth = session[SSD_DETECT_SEL]
+    if cfg.ssd.mode == "detect":
+        ground_truth = session[SSD_DETECT_SEL]
+    else:
+        ground_truth = cfg.ssd.mock_name
     timestamp = handlers.reporter.get_timetamp()
 
     logger.debug(read_inputs)
@@ -288,7 +302,7 @@ def main(session: SessionStateProxy):
     2. 運行所有的 event
     """
 
-    cfg = session[CFG]
+    cfg: handlers.config.Config = session[CFG]
 
     # Title
     st.title("Runtime")
@@ -310,11 +324,20 @@ def main(session: SessionStateProxy):
     try:
         with st.spinner("Detecting SSD ..."):
             ssd_event(session)
+
+        bt_is_available = False
+        if cfg.ssd.mode == "detect":
+            bt_is_available = bool(session[SSD_DETECT_SEL] is not None)
+        else:
+            bt_is_available = True
+
+        logger.info(f"Start button is : {bt_is_available}")
+
         if st.button(
             label="Start",
             use_container_width=True,
             type="primary",
-            disabled=not bool(session[SSD_DETECT_SEL]),
+            disabled=not bt_is_available,
         ):
             aida_event(session)
             infer_outputs = ivit_event(session)
