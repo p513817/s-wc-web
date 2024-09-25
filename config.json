@@ -5,25 +5,25 @@
         "ismart_path": "C:\\Users\\max_chang\\Desktop\\s-wc-web\\iSMART_6.4.18\\iSMART.exe"
     },
     "aida": {
-        "enable": false,
-        "exec_path": "",
-        "out_dir": "",
-        "dir_kw": ""
+        "enable": true,
+        "exec_path": "C:\\Users\\max_chang\\Desktop\\aida64\\autoConnectTool_aida64_v598_USBnonSupport_.exe",
+        "out_dir": "C:\\Users\\max_chang\\Desktop\\aida64",
+        "dir_kw": "aida64v730"
     },
     "ivit": {
         "enable": true,
-        "mode": "validator",
-        "target_model": "read",
-        "from_csv": false,
-        "rulebase": false,
-        "input_dir": "C:\\Users\\max_chang\\Desktop\\data\\6_new_feat\\Test",
+        "mode": "generatic",
+        "target_model": null,
+        "from_csv": true,
+        "rulebase": true,
+        "input_dir": null,
         "models": {
             "read": {
                 "model_dir": "C:\\Users\\max_chang\\Desktop\\s-wc\\model\\AIDA64_CV2_BW_R_ALL",
                 "thres": 0.1
             },
             "write": {
-                "model_dir": null,
+                "model_dir": "C:\\Users\\max_chang\\Desktop\\s-wc\\model\\AIDA64_CV2_BW_W_ALL",
                 "thres": 0.1
             }
         }
@@ -33,5 +33,6 @@
         "retrain": "R:\\Temp\\Max\\retrain",
         "current": "R:\\Temp\\Max\\current",
         "history": "R:\\Temp\\Max\\history"
-    }
+    },
+    "debug": true
 }
