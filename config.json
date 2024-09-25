@@ -1,0 +1,37 @@
+{
+    "ssd": {
+        "mode": "detect",
+        "mock_name": "",
+        "ismart_path": "C:\\Users\\max_chang\\Desktop\\s-wc-web\\iSMART_6.4.18\\iSMART.exe"
+    },
+    "aida": {
+        "enable": false,
+        "exec_path": "",
+        "out_dir": "",
+        "dir_kw": ""
+    },
+    "ivit": {
+        "enable": true,
+        "mode": "validator",
+        "target_model": "read",
+        "from_csv": false,
+        "rulebase": false,
+        "input_dir": "C:\\Users\\max_chang\\Desktop\\data\\6_new_feat\\Test",
+        "models": {
+            "read": {
+                "model_dir": "C:\\Users\\max_chang\\Desktop\\s-wc\\model\\AIDA64_CV2_BW_R_ALL",
+                "thres": 0.1
+            },
+            "write": {
+                "model_dir": null,
+                "thres": 0.1
+            }
+        }
+    },
+    "output": {
+        "out_dir": "R:\\Temp\\Max",
+        "retrain": "R:\\Temp\\Max\\retrain",
+        "current": "R:\\Temp\\Max\\current",
+        "history": "R:\\Temp\\Max\\history"
+    }
+}
