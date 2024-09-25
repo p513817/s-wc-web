@@ -49,6 +49,9 @@ IVIT_WMDL_THRES = "ivit_write_model_threshold"
 ## Output
 OUT_DIR_INP = "output_dir_inp"
 
+## Debug
+DEBUG_ENABLE_CBX = "debug_enable_checkbox"
+
 
 def add_ssd_section(session, header: str = "SSD") -> None:
     cfg: config.Config = session[CFG]
@@ -193,12 +196,27 @@ def add_output_section(session, header: str = "OUTPUT") -> None:
     )
 
 
+def add_debug_section(session, header: str = "DEBUG") -> None:
+    cfg: config.Config = session[CFG]
+    st.subheader(header)
+    # enable
+    st.checkbox(
+        label=f"Enable {header} Mode",
+        value=cfg.ivit.enable,
+        label_visibility="visible",
+        key=DEBUG_ENABLE_CBX,
+    )
+    if not session[DEBUG_ENABLE_CBX]:
+        return
+
+
 def main(session):
     st.title("Setting")
     add_ssd_section(session)
     add_aida_section(session)
     add_ivit_section(session)
     add_output_section(session)
+    add_debug_section(session)
 
     if st.button("Submit", use_container_width=True, type="primary"):
         logger.info("Click submit button")
@@ -206,7 +224,7 @@ def main(session):
             ssd=config.SSD(
                 mode=session[SSD_MODE_RAD],
                 mock_name=session.get(SSD_MOCK_INP, ""),
-                ismart_path=session[SSD_ISMART_PATH],
+                ismart_path=session.get(SSD_ISMART_PATH, None),
             ),
             aida=config.AIDA(
                 enable=session[AIDA_ENABLE_CBX],
@@ -233,6 +251,7 @@ def main(session):
                 ),
             ),
             output=config.OUTPUT(out_dir=session[OUT_DIR_INP]),
+            debug=session[DEBUG_ENABLE_CBX],
         )
         logger.info("Initialized config object")
         # Validation and Save
