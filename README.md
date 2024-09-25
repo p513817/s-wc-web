@@ -6,16 +6,11 @@ SSD Waveform Detector with Streamlit
 
 # Prerequisite
 1. Install `Python >= 3.10`
-2. Install Python Module for `S-WC`
-    ```bash
-    python -m venv .env
-    .\.env\Scripts\activate
-    python -m pip install -r .\requirements.txt
-    ```
+2. Install related module by launching [`setup.bat`](setup.bat)
 
 # Usage
-* Start :: Double Click the [`run.bat`](run.bat)
-* Stop :: Double Click the [`stop.bat`](stop.bat)
+* **Start** :: launch [`run.bat`](run.bat)
+* **Stop** :: launch [`stop.bat`](stop.bat)
 
 # Author
 Max Chang, p513817@gmail.com
