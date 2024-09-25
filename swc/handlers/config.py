@@ -76,6 +76,7 @@ class Config(BaseModel):
     aida: AIDA = AIDA()
     ivit: IVIT = IVIT()
     output: OUTPUT = OUTPUT()
+    debug: bool = False
 
 
 def get(setting_path: str = "config.json") -> Config:
