@@ -1,0 +1,13 @@
+streamlit==1.37
+streamlit-extras
+plotly
+opencv-python 
+coloredlogs 
+colorlog
+tqdm 
+openvino==2022.3.0 
+pyinstaller
+streamlit-pydantic
+pyuac
+pypiwin32
+openpyxl
