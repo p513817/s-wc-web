@@ -30,10 +30,12 @@ def ssd_event(session: SessionStateProxy):
         st.info(f"Mock SSD: {cfg.ssd.mock_name}")
 
     elif cfg.ssd.mode == "detect":
-        if cfg.debug:
-            disks = handlers.ssd.mock_detect(ismart_path=cfg.ssd.ismart_path)
-        else:
-            disks = handlers.ssd.detect(ismart_path=cfg.ssd.ismart_path)
+        detect_ssd_func = (
+            handlers.ssd.mock_detect
+            if cfg.debug.mock_ssd_process
+            else handlers.ssd.detect
+        )
+        disks = detect_ssd_func(ismart_path=cfg.ssd.ismart_path)
 
         handlers.ssd.valid_detected_disks(disks=disks)
         st.selectbox(label="Select SSD", options=disks, index=0, key=SSD_DETECT_SEL)
@@ -47,7 +49,7 @@ def aida_event(session: SessionStateProxy):
     logger.info("Run AIDA Event")
     # Run AIDA
     with st.spinner("Running AIDA64"):
-        if cfg.debug:
+        if cfg.debug.mock_aida_process:
             handlers.aida.mock_run_cmd(output_dir=cfg.aida.out_dir)
         else:
             handlers.aida.run_cmd(aida_exec_path=cfg.aida.exec_path)

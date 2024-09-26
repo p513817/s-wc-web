@@ -2,37 +2,39 @@
     "ssd": {
         "mode": "detect",
         "mock_name": "",
-        "ismart_path": "C:\\Users\\max_chang\\Desktop\\s-wc-web\\iSMART_6.4.18\\iSMART.exe"
+        "ismart_path": "C:\\Users\\DQE\\Desktop\\iSMART_6.4.18\\iSMART.exe"
     },
     "aida": {
         "enable": true,
-        "exec_path": "C:\\Users\\max_chang\\Desktop\\aida64\\autoConnectTool_aida64_v598_USBnonSupport_.exe",
-        "out_dir": "C:\\Users\\max_chang\\Desktop\\aida64",
-        "dir_kw": "aida64v730"
+        "exec_path": "C:\\Users\\DQE\\Desktop\\aida64\\AIDA730.exe",
+        "out_dir": "C:\\Users\\DQE\\Desktop\\aida64",
+        "dir_kw": "v730"
     },
     "ivit": {
         "enable": true,
-        "mode": "generatic",
-        "target_model": null,
+        "mode": "validator",
+        "target_model": "read",
         "from_csv": true,
         "rulebase": true,
         "input_dir": null,
         "models": {
             "read": {
-                "model_dir": "C:\\Users\\max_chang\\Desktop\\s-wc\\model\\AIDA64_CV2_BW_R_ALL",
+                "model_dir": "C:\\Users\\DQE\\Desktop\\s-wc-web\\model\\AIDA64_CV2_BW_R_ALL",
                 "thres": 0.1
             },
             "write": {
-                "model_dir": "C:\\Users\\max_chang\\Desktop\\s-wc\\model\\AIDA64_CV2_BW_W_ALL",
+                "model_dir": null,
                 "thres": 0.1
             }
         }
     },
     "output": {
-        "out_dir": "R:\\Temp\\Max",
-        "retrain": "R:\\Temp\\Max\\retrain",
-        "current": "R:\\Temp\\Max\\current",
-        "history": "R:\\Temp\\Max\\history"
+        "retrain": "C:\\Users\\DQE\\Desktop\\s-wc-web\\retrain",
+        "current": "C:\\Users\\DQE\\Desktop\\s-wc-web\\current",
+        "history": "C:\\Users\\DQE\\Desktop\\s-wc-web\\history"
     },
-    "debug": true
+    "debug": {
+        "mock_ssd_process": false,
+        "mock_aida_process": true
+    }
 }

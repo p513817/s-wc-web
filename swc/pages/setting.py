@@ -47,10 +47,13 @@ IVIT_RMDL_THRES = "ivit_read_model_threshold"
 IVIT_WMDL_THRES = "ivit_write_model_threshold"
 
 ## Output
-OUT_DIR_INP = "output_dir_inp"
+RET_DIR_INP = "retrain_dir_inp"
+CUR_DIR_INP = "current_dir_inp"
+HIS_DIR_INP = "history_dir_inp"
 
 ## Debug
-DEBUG_ENABLE_CBX = "debug_enable_checkbox"
+DEBUG_SSD_ENABLE_CBX = "debug_ssd_enable_checkbox"
+DEBUG_AIDA_ENABLE_CBX = "debug_aida_enable_checkbox"
 
 
 def add_ssd_section(session, header: str = "SSD") -> None:
@@ -117,7 +120,7 @@ def add_ivit_section(session, header: str = "IVIT") -> None:
         return
 
     # input image directory
-    if session[SSD_MODE_RAD]=="mock" or not session[AIDA_ENABLE_CBX]:
+    if session[SSD_MODE_RAD] == "mock" or not session[AIDA_ENABLE_CBX]:
         st.text_input(
             label="Input Image / CSV directory",
             key=IVIT_IMAGE_DIR_INP,
@@ -135,7 +138,7 @@ def add_ivit_section(session, header: str = "IVIT") -> None:
     # rulebase
     st.checkbox(
         label="Rulebase Validation",
-        value=cfg.ivit.rulebase if session[IVIT_FROM_CSV_CBX]==True else False,
+        value=cfg.ivit.rulebase if session[IVIT_FROM_CSV_CBX] == True else False,
         label_visibility="visible",
         key=IVIT_RULEBASE_CBX,
         disabled=not session[IVIT_FROM_CSV_CBX],
@@ -152,7 +155,9 @@ def add_ivit_section(session, header: str = "IVIT") -> None:
         options=correct_opts,
         captions=correct_caps,
         key=IVIT_MODE_RAD,
-        index=correct_opts.index(cfg.ivit.mode) if cfg.ivit.mode and cfg.ivit.mode in correct_opts else 0,
+        index=correct_opts.index(cfg.ivit.mode)
+        if cfg.ivit.mode and cfg.ivit.mode in correct_opts
+        else 0,
         label_visibility="collapsed",
     )
     if session[IVIT_MODE_RAD] == M_VAL:
@@ -197,7 +202,13 @@ def add_output_section(session, header: str = "OUTPUT") -> None:
     cfg: config.Config = session[CFG]
     st.subheader(header)
     st.text_input(
-        label="Enter the output directory", key=OUT_DIR_INP, value=cfg.output.out_dir
+        label="Enter the retrain directory", key=RET_DIR_INP, value=cfg.output.retrain
+    )
+    st.text_input(
+        label="Enter the current directory", key=CUR_DIR_INP, value=cfg.output.current
+    )
+    st.text_input(
+        label="Enter the history directory", key=HIS_DIR_INP, value=cfg.output.history
     )
 
 
@@ -206,13 +217,17 @@ def add_debug_section(session, header: str = "DEBUG") -> None:
     st.subheader(header)
     # enable
     st.checkbox(
-        label=f"Enable {header} Mode",
-        value=cfg.debug,
+        label="Mock SSD function for debug",
+        value=cfg.debug.mock_ssd_process,
         label_visibility="visible",
-        key=DEBUG_ENABLE_CBX,
+        key=DEBUG_SSD_ENABLE_CBX,
     )
-    if not session[DEBUG_ENABLE_CBX]:
-        return
+    st.checkbox(
+        label="Mock AIDA function for debug",
+        value=cfg.debug.mock_aida_process,
+        label_visibility="visible",
+        key=DEBUG_AIDA_ENABLE_CBX,
+    )
 
 
 def main(session):
@@ -232,7 +247,7 @@ def main(session):
                 ismart_path=session.get(SSD_ISMART_PATH, None),
             ),
             aida=config.AIDA(
-                enable=session[SSD_MODE_RAD]=="detect" and session[AIDA_ENABLE_CBX],
+                enable=session[SSD_MODE_RAD] == "detect" and session[AIDA_ENABLE_CBX],
                 exec_path=session.get(AIDA_EXEC_PATH_INP, ""),
                 out_dir=session.get(AIDA_OUT_DIR_INP, ""),
                 dir_kw=session.get(AIDA_DIR_KW_INP, ""),
@@ -242,7 +257,9 @@ def main(session):
                 mode=session.get(IVIT_MODE_RAD),
                 target_model=session.get(IVIT_TRG_MDL_SEL),
                 from_csv=session.get(IVIT_FROM_CSV_CBX),
-                rulebase=session.get(IVIT_RULEBASE_CBX) if session.get(IVIT_FROM_CSV_CBX) else False,
+                rulebase=session.get(IVIT_RULEBASE_CBX)
+                if session.get(IVIT_FROM_CSV_CBX)
+                else False,
                 input_dir=session.get(IVIT_IMAGE_DIR_INP),
                 models=config.IVIT_RW_Model(
                     read=config.IVITModel(
@@ -255,8 +272,15 @@ def main(session):
                     ),
                 ),
             ),
-            output=config.OUTPUT(out_dir=session[OUT_DIR_INP]),
-            debug=session[DEBUG_ENABLE_CBX],
+            output=config.OUTPUT(
+                retrain=session[RET_DIR_INP],
+                current=session[CUR_DIR_INP],
+                history=session[HIS_DIR_INP],
+            ),
+            debug=config.DEBUG(
+                mock_aida_process=session[DEBUG_AIDA_ENABLE_CBX],
+                mock_ssd_process=session[DEBUG_SSD_ENABLE_CBX],
+            ),
         )
         logger.info("Initialized config object")
         # Validation and Save

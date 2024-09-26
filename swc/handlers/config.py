@@ -6,7 +6,7 @@ import logging
 from pathlib import Path
 from typing import Literal, Optional
 
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict
 
 logger = logging.getLogger(__name__)
 
@@ -15,14 +15,14 @@ class BaseModelWrap(BaseModel):
     model_config = ConfigDict(protected_namespaces=())
 
 
+class EnableModel(BaseModelWrap):
+    enable: bool = True
+
+
 class SSD(BaseModelWrap):
     mode: Literal["detect", "mock"] = "detect"
     mock_name: Optional[str] = None
     ismart_path: Optional[str] = None
-
-
-class EnableModel(BaseModelWrap):
-    enable: bool = True
 
 
 class AIDA(EnableModel):
@@ -54,29 +54,22 @@ class IVIT(EnableModel):
 
 
 class OUTPUT(BaseModelWrap):
-    out_dir: Optional[str] = None
-    retrain: str = "retrain"
-    current: str = "current"
-    history: str = "history"
-
-    @model_validator(mode="before")
-    def update_paths(cls, values):
-        out_dir = values.get("out_dir")
-        if out_dir:
-            # 如果 out_dir 不是 None，修改路徑
-            values["retrain"] = str(Path(out_dir) / values.get("retrain", "retrain"))
-            values["current"] = str(Path(out_dir) / values.get("current", "current"))
-            values["history"] = str(Path(out_dir) / values.get("history", "history"))
-        return values
+    retrain: Path | str = "retrain"
+    current: Path | str = "current"
+    history: Path | str = "history"
 
 
-class Config(BaseModel):
-    model_config = ConfigDict(protected_namespaces=())
+class DEBUG(BaseModelWrap):
+    mock_ssd_process: bool = False
+    mock_aida_process: bool = False
+
+
+class Config(BaseModelWrap):
     ssd: SSD = SSD()
     aida: AIDA = AIDA()
     ivit: IVIT = IVIT()
     output: OUTPUT = OUTPUT()
-    debug: bool = False
+    debug: DEBUG = DEBUG()
 
 
 def get(setting_path: str = "config.json") -> Config:
