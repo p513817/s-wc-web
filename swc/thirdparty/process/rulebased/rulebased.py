@@ -55,7 +55,7 @@ def process(data_filtered: pd.DataFrame, test_name: str) -> tuple:
 
     """
 
-    if filtered_data.empty:
+    if data_filtered.empty:
         return 0, 0, 0, 0, 0, 0, "No Data"
 
     filtered_data = data_filtered[data_filtered["Test"] == test_name]
