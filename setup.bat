@@ -7,6 +7,17 @@ IF "%python_version%" == "False" (
     exit /B 1
 )
 
+REM Check if .env virtual environment exists
+IF EXIST .env (
+    echo Virtual environment ".env" already exists.
+) ELSE (
+    REM Create virtual environment
+    echo Creating virtual environment...
+    python -m venv .env
+)
+REM Activate the virtual environment
+echo Activating virtual environment...
+call .\.env\Scripts\activate
 
 REM Install required Python modules
 echo Installing required Python modules...
