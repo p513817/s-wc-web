@@ -117,7 +117,7 @@ def add_ivit_section(session, header: str = "IVIT") -> None:
         return
 
     # input image directory
-    if not session[AIDA_ENABLE_CBX]:
+    if session[SSD_MODE_RAD]=="mock" or not session[AIDA_ENABLE_CBX]:
         st.text_input(
             label="Input Image / CSV directory",
             key=IVIT_IMAGE_DIR_INP,
@@ -135,7 +135,7 @@ def add_ivit_section(session, header: str = "IVIT") -> None:
     # rulebase
     st.checkbox(
         label="Rulebase Validation",
-        value=cfg.ivit.rulebase,
+        value=cfg.ivit.rulebase if session[IVIT_FROM_CSV_CBX]==True else False,
         label_visibility="visible",
         key=IVIT_RULEBASE_CBX,
         disabled=not session[IVIT_FROM_CSV_CBX],
@@ -207,7 +207,7 @@ def add_debug_section(session, header: str = "DEBUG") -> None:
     # enable
     st.checkbox(
         label=f"Enable {header} Mode",
-        value=cfg.debug.enable,
+        value=cfg.debug,
         label_visibility="visible",
         key=DEBUG_ENABLE_CBX,
     )
@@ -232,7 +232,7 @@ def main(session):
                 ismart_path=session.get(SSD_ISMART_PATH, None),
             ),
             aida=config.AIDA(
-                enable=session[AIDA_ENABLE_CBX],
+                enable=session[SSD_MODE_RAD]=="detect" and session[AIDA_ENABLE_CBX],
                 exec_path=session.get(AIDA_EXEC_PATH_INP, ""),
                 out_dir=session.get(AIDA_OUT_DIR_INP, ""),
                 dir_kw=session.get(AIDA_DIR_KW_INP, ""),
@@ -242,7 +242,7 @@ def main(session):
                 mode=session.get(IVIT_MODE_RAD),
                 target_model=session.get(IVIT_TRG_MDL_SEL),
                 from_csv=session.get(IVIT_FROM_CSV_CBX),
-                rulebase=session.get(IVIT_RULEBASE_CBX),
+                rulebase=session.get(IVIT_RULEBASE_CBX) if session.get(IVIT_FROM_CSV_CBX) else False,
                 input_dir=session.get(IVIT_IMAGE_DIR_INP),
                 models=config.IVIT_RW_Model(
                     read=config.IVITModel(
