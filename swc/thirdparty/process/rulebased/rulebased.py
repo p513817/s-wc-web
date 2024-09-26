@@ -34,7 +34,7 @@ def filter_dataframe(
     return data_filtered
 
 
-def process(filtered_data: pd.DataFrame) -> tuple:
+def process(data_filtered: pd.DataFrame, test_name: str) -> tuple:
     """
     Arguments:
         data_filtered (DataFrame): The filtered pd.dataframe
@@ -58,6 +58,8 @@ def process(filtered_data: pd.DataFrame) -> tuple:
     if filtered_data.empty:
         return 0, 0, 0, 0, 0, 0, "No Data"
 
+    filtered_data = data_filtered[data_filtered["Test"] == test_name]
+
     # 使用 pandas 的內建函數計算最大值、最小值和平均值
     max_val = round(filtered_data["Result_MBps"].max(), 1)
     min_val = round(filtered_data["Result_MBps"].min(), 1)
@@ -78,7 +80,7 @@ def process(filtered_data: pd.DataFrame) -> tuple:
     # )
 
     # 設定閥值為後90%數據平均值的85%，這樣可以檢測數據是否出現異常波動
-    threshold = last_90_percent_avg * 0.85
+    threshold = round(last_90_percent_avg * 0.85, 1)
 
     # 判斷後90%數據中的最小值是否小於設定的閥值
     last_90_percent_min_val = round(last_90_percent_results.min(), 1)

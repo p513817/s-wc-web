@@ -80,6 +80,7 @@ def plot_results(
     min_val,
     avg_val,
     last_90_percent_avg,
+    last_90_percent_min_val,
     threshold,
     output_folder,
     line_width=2,
@@ -137,7 +138,7 @@ def plot_results(
     plt.text(
         0.5,
         0.895,
-        f"Max: {max_val}, Min: {min_val}, Avg: {avg_val}",
+        f"Max: {max_val}, Min: {min_val}, Avg: {avg_val}, 90% Avg: {last_90_percent_avg}, 90% Min: {last_90_percent_min_val}, Thres: {threshold}",
         ha="center",
         va="center",
         transform=fig.transFigure,

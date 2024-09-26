@@ -53,12 +53,12 @@ def process_file(
         last_90_percent_min_val,
         last_90_percent_avg,
         status,
-    ) = rulebased.process(data_filtered)
+    ) = rulebased.process(data_filtered, test_name)
 
     # 結果資訊
     result_info = (
         f"{test_name}: Max: {max_val}, Min: {min_val}, Avg: {avg_val}, "
-        f"Last_90%_Min: {last_90_percent_min_val}, Last_90%_Avg: {last_90_percent_avg}, Status: {status}"
+        f"Last_90%_Min: {last_90_percent_min_val}, Last_90%_Avg: {last_90_percent_avg}, Thres: {threshold}, Status: {status}"
     )
     logger.debug(result_info)
 
@@ -76,6 +76,7 @@ def process_file(
     result_path = plot_results.plot_results(
         avg_val = avg_val,
         last_90_percent_avg = last_90_percent_avg,
+        last_90_percent_min_val = last_90_percent_min_val,
         threshold = threshold,
         draw_red_rect=False,
         **kwargs,
@@ -83,6 +84,7 @@ def process_file(
     verify_path = plot_results.plot_results(
         avg_val = avg_val,
         last_90_percent_avg = last_90_percent_avg,
+        last_90_percent_min_val = last_90_percent_min_val,
         threshold = threshold,
         draw_red_rect=True,
         **kwargs,
