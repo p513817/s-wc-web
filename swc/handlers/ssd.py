@@ -1,6 +1,5 @@
 import logging
 import time
-from functools import lru_cache
 
 from swc.thirdparty import ismart
 
@@ -34,14 +33,16 @@ def detect(ismart_path: str) -> list:
     test_products = ismart.wmic.get_test_product()
 
     return (
-        [ismart.wmic.get_name_from_ismart(product, ismart_exec_path=ismart_path) for product in test_products]
+        [
+            ismart.wmic.get_name_from_ismart(product, ismart_exec_path=ismart_path)
+            for product in test_products
+        ]
         if test_products
         else []
     )
 
 
-@lru_cache
-def mock_detect(ismart_path: str) -> list:
+def mock_detect(ismart_path: str = "") -> list:
     logger.warning("Detect ssd with mock mode")
     time.sleep(1)
     return ["4TG2-P", "3TE6"]
