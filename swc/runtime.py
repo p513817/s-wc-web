@@ -148,7 +148,7 @@ def get_report_plot(reports):
                 ),
                 "domain": data.input.domain,
                 "ai_verify": report.ai_verify,
-                "rule_verify": data.input.rule_verify,
+                "rule_verify": report.rule_verify,
                 "ground_truth": report.ground_truth,
                 "label": top1.label,
                 "confidence": top1.confidence,
