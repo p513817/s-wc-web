@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import List, Tuple, Literal, Optional
 from . import ivit, config
 from swc import thirdparty
-
+import os
 logger = logging.getLogger(__name__)
 
 
@@ -17,10 +17,12 @@ class AIDAError(Exception):
 def mock_run_cmd(output_dir: str = ""):
     logger.info("Run mock AIDA")
     # 使用 Popen 來捕獲 stdout
+    fake_aida = Path(__file__).parent.parent.parent / "testing" / "fake_aida" / "fake_aida.py"
+
     process = sp.Popen(
         [
             "python",
-            r"C:\Users\max_chang\Desktop\s-wc-web\testing\fake_aida\fake_aida.py",
+            fake_aida,
             "-o",
             output_dir,
         ],
@@ -40,34 +42,53 @@ def mock_run_cmd(output_dir: str = ""):
         raise AIDAError(f"Error: {stderr_output}")
 
 
+# def run_cmd(aida_exec_path: str):
+#     logger.info("Run AIDA")
+#     is_aida64_empty = False
+#     process = sp.Popen(
+#         aida_exec_path,
+#         shell=True,
+#         encoding="utf-8",
+#         stdout=sp.PIPE,
+#         stderr=sp.PIPE,
+#         universal_newlines=True,
+#     )
+#     while True:
+#         line = process.stdout.readline().strip().replace("\n", "")
+#         if line:
+#             if "[]" in line:
+#                 is_aida64_empty = True
+#                 break
+#         if line == "" and process.poll() is not None:
+#             break
+#     process.stdout.close()
+#     return_code = process.wait()
+#     if return_code != 0:
+#         raise AIDAError(f"Run AIDA64 Failed: {process.stderr}")
+#     if is_aida64_empty:
+#         raise AIDAError("Run AIDA64 Failed: Can not find any testing disk")
+
+#     return None
+
 def run_cmd(aida_exec_path: str):
+    current_path = os.getcwd()
     logger.info("Run AIDA")
     is_aida64_empty = False
-    process = sp.Popen(
+    os.chdir(Path(aida_exec_path).parent)
+    process = sp.run(
         aida_exec_path,
         shell=True,
         encoding="utf-8",
-        stdout=sp.PIPE,
-        stderr=sp.PIPE,
+        capture_output=True,
         universal_newlines=True,
     )
-    while True:
-        line = process.stdout.readline().strip().replace("\n", "")
-        if line:
-            if "[]" in line:
-                is_aida64_empty = True
-                break
-        if line == "" and process.poll() is not None:
-            break
-    process.stdout.close()
-    return_code = process.wait()
-    if return_code != 0:
+    os.chdir(current_path)
+    if process.returncode != 0:
         raise AIDAError(f"Run AIDA64 Failed: {process.stderr}")
     if is_aida64_empty:
         raise AIDAError("Run AIDA64 Failed: Can not find any testing disk")
-
+    
     return None
-
 
 def validate(cfg: config.Config):
     if not cfg.aida.enable:
