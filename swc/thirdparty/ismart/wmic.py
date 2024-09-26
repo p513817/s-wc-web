@@ -35,9 +35,9 @@ def get_name_from_ismart(
 def get_os_product():
     """
     wmic diskdrive where "MediaType='Fixed hard disk media'" get Model
-
+    wmic partition where BootPartition=TRUE get DiskIndex
     """
-    command = "wmic diskdrive where \"MediaType='Fixed hard disk media'\" get Index"
+    command = "wmic partition where BootPartition=TRUE get DiskIndex"
     p = sp.run(command, shell=True, capture_output=True, text=True)
     return [line.strip() for line in p.stdout.split("\n")[1:] if line]
 
