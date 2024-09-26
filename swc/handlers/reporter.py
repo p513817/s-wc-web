@@ -96,7 +96,7 @@ def get_retrain_path(
     """
     root = Path(retrain_root)
     pn = "postivie" if status else "negative"
-    gt = ground_truth
+    gt = ground_truth.replace('"', ' ')
     rw = get_rw_from_domain(domain).replace("_", "")
 
     dst_dir = root / pn / rw / gt
@@ -120,7 +120,7 @@ def get_current_path(
     """
     root = Path(current_root)
     pn = "postivie" if status else "negative"
-    gt = ground_truth
+    gt = ground_truth.replace('"', ' ')
     rw = get_rw_from_domain(domain)
 
     src_fname = Path(data_path).name
@@ -146,7 +146,7 @@ def get_history_path(
                 - <data>
     """
     root = Path(history_root)
-    gt = ground_truth
+    gt = ground_truth.replace('"', ' ')
     rw = get_rw_from_domain(domain)
 
     src_fname = Path(data_path).name
@@ -200,7 +200,7 @@ def get_report(
         report = Report(
             status=status,
             ground_truth=ground_truth,
-            rule_verify=data.input.rule_verify,
+            rule_verify=rule_verify,
             ai_verify=ai_verify,
             detected=data.output[0].label,
             confidence=data.output[0].confidence,
@@ -214,7 +214,7 @@ def get_report(
         report.output_info.retrain = str(
             get_retrain_path(
                 retrain_root=config_info.output.retrain,
-                status=report.status,
+                status=report.status == "PASS",
                 ground_truth=report.ground_truth,
                 domain=data.input.domain,
             )
@@ -222,7 +222,7 @@ def get_report(
         report.output_info.current = str(
             get_current_path(
                 current_root=config_info.output.current,
-                status=report.status,
+                status=report.status == "PASS",
                 ground_truth=report.ground_truth,
                 domain=data.input.domain,
                 timestamp=report.created_time,
