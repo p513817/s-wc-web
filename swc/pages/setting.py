@@ -207,7 +207,7 @@ def add_debug_section(session, header: str = "DEBUG") -> None:
     # enable
     st.checkbox(
         label=f"Enable {header} Mode",
-        value=cfg.ivit.enable,
+        value=cfg.debug.enable,
         label_visibility="visible",
         key=DEBUG_ENABLE_CBX,
     )
