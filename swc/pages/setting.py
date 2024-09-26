@@ -142,12 +142,17 @@ def add_ivit_section(session, header: str = "IVIT") -> None:
     )
 
     # ivit mode
+    correct_opts, correct_caps = IVIT_MODE_OPTS, IVIT_MODE_CAPS
+    if session[SSD_MODE_RAD] == "mock":
+        correct_opts.pop(0)
+        correct_caps.pop(0)
+
     st.radio(
         "Select IVIT Mode",
-        options=IVIT_MODE_OPTS,
-        captions=IVIT_MODE_CAPS,
+        options=correct_opts,
+        captions=correct_caps,
         key=IVIT_MODE_RAD,
-        index=IVIT_MODE_OPTS.index(cfg.ivit.mode) if cfg.ivit.mode else 0,
+        index=correct_opts.index(cfg.ivit.mode) if cfg.ivit.mode and cfg.ivit.mode in correct_opts else 0,
         label_visibility="collapsed",
     )
     if session[IVIT_MODE_RAD] == M_VAL:
