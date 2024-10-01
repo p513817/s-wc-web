@@ -99,19 +99,24 @@ def add_aida_section(session, header: str = "AIDA64") -> None:
     )
     if session[SSD_MODE_RAD] == M_DET and session[AIDA_ENABLE_CBX]:
         st.text_input(
-            label="Executable file path",
+            label="AIDA64 Executable File Path (*.exe)",
             value=cfg.aida.exec_path,
             key=AIDA_EXEC_PATH_INP,
+            placeholder=r"C:\Users\DQE\Desktop\aida64\AIDA730.exe",
         )
         st.text_input(
-            label="Generate file folder",
+            label="Path To Generating Result Folder",
             value=cfg.aida.out_dir,
             key=AIDA_OUT_DIR_INP,
+            placeholder=r"C:\Users\DQE\Desktop\aida64",
+            help="Enter the path ( root directory ) where the AIDA64 result will be generated",
         )
         st.text_input(
-            label="Generate file folder keyword",
+            label="The Keyword of Generated Result Folder",
             value=cfg.aida.dir_kw,
             key=AIDA_DIR_KW_INP,
+            placeholder="aida64v730",
+            help="For example: aida64v730_<FW Number>, then enter the 'aida64v730'",
         )
 
 
