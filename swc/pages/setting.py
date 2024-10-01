@@ -67,12 +67,22 @@ def add_ssd_section(session, header: str = "SSD") -> None:
         key=SSD_MODE_RAD,
         index=SSD_MODE_OPTS.index(cfg.ssd.mode),
         label_visibility="collapsed",
+        format_func=handlers.st_formatter.upper_format_func,
     )
     if session[SSD_MODE_RAD] == M_MOCK:
-        st.text_input(label="SSD Name", key=SSD_MOCK_INP, value=cfg.ssd.mock_name)
+        st.text_input(
+            label="SSD Name",
+            key=SSD_MOCK_INP,
+            value=cfg.ssd.mock_name,
+            placeholder="Innodisk 3TEA",
+        )
     else:
         st.text_input(
-            label="iSMART Path", key=SSD_ISMART_PATH, value=cfg.ssd.ismart_path
+            label="iSMART Executable File Path (*.exe)",
+            key=SSD_ISMART_PATH,
+            value=cfg.ssd.ismart_path,
+            placeholder=r"C:\Users\DQE\Desktop\iSMART_6.4.18\iSMART.exe",
+            help="Enter the absolute path to iSMART executable file",
         )
 
 
