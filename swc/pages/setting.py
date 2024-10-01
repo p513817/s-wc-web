@@ -67,7 +67,7 @@ def add_ssd_section(session, header: str = "SSD") -> None:
         key=SSD_MODE_RAD,
         index=SSD_MODE_OPTS.index(cfg.ssd.mode),
         label_visibility="collapsed",
-        format_func=handlers.st_formatter.upper_format_func,
+        format_func=handlers.st_formatter.cap_format_func,
     )
     if session[SSD_MODE_RAD] == M_MOCK:
         st.text_input(
@@ -182,7 +182,7 @@ def add_ivit_section(session, header: str = "DECISION RULE") -> None:
         if cfg.ivit.mode and cfg.ivit.mode in correct_opts
         else 0,
         label_visibility="collapsed",
-        format_func=handlers.st_formatter.upper_format_func,
+        format_func=handlers.st_formatter.cap_format_func,
     )
     if session[IVIT_MODE_RAD] == M_VAL:
         st.selectbox(
@@ -193,7 +193,7 @@ def add_ivit_section(session, header: str = "DECISION RULE") -> None:
             if cfg.ivit.target_model
             else 0,
             label_visibility="collapsed",
-            format_func=handlers.st_formatter.upper_format_func,
+            format_func=handlers.st_formatter.cap_format_func,
         )
 
     # ivit model
