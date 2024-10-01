@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 SSD_DETECT_SEL = "ssd_detect_selectbox"
 KW_R = "_R"
 KW_W = "_W"
+CFG = "config"
 
 # --------------------------------------------------
 
@@ -203,6 +204,7 @@ def generatic_report_event(
         ground_truth = session[SSD_DETECT_SEL]
     else:
         ground_truth = cfg.ssd.mock_name
+
     timestamp = handlers.reporter.get_timetamp()
     model_info_map = {
         "read": get_model_info(cfg.ivit.models.read),
@@ -271,7 +273,7 @@ def none_ivit_report_event(session: SessionStateProxy):
     logger.debug(write_inputs)
 
     # Gen InferData
-    infer_outputs = [
+    infer_outputs: List[handlers.ivit.InferData] = [
         handlers.ivit.InferData(
             input=infer_input,
             output=[handlers.ivit.InferOutput(label=None, index=None, confidence=None)],
@@ -363,7 +365,6 @@ def main(session: SessionStateProxy):
 
 
 # Main
-CFG = "config"
 session = st.session_state
 session[CFG] = cfg = config.get()
 main(session)
