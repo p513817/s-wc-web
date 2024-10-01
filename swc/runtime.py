@@ -60,7 +60,9 @@ def aida_event(session: SessionStateProxy):
     images, csvs = handlers.aida.parse_aida_output_dir(
         gen_folders[0], cfg.ivit.mode == "validator"
     )
-    st.success("AIDA Finished")
+
+    st.balloons()
+    st.toast("AIDA Finished")
 
 
 # --------------------------------------------------
@@ -123,10 +125,15 @@ def ivit_event(session: SessionStateProxy) -> List[handlers.ivit.InferData]:
     if not cfg.ivit.enable:
         return []
 
-    if cfg.ivit.mode == "generatic":
-        return ivit_generatic_event(session)
-    else:
-        return ivit_validator_event(session)
+    st.info(f"Detected Mode: {cfg.ivit.mode.capitalize()}")
+    with st.spinner("Waiting for decision rule ..."):
+        if cfg.ivit.mode == "generatic":
+            res = ivit_generatic_event(session)
+        else:
+            res = ivit_validator_event(session)
+    st.balloons()
+    st.toast("Decision Rule Finished")
+    return res
 
 
 # --------------------------------------------------
