@@ -115,13 +115,20 @@ def add_aida_section(session, header: str = "AIDA64") -> None:
         )
 
 
-def add_ivit_section(session, header: str = "IVIT") -> None:
+def add_ivit_section(session, header: str = "DECISION RULE") -> None:
     cfg: config.Config = session[CFG]
     st.subheader(header)
 
+    st.checkbox(
+        label="Enable CSV Decision Rule",
+        value=True,
+        label_visibility="visible",
+        disabled=True,
+    )
+
     # enable
     st.checkbox(
-        label=f"Enable {header}",
+        label="Enable iVIT",
         value=cfg.ivit.enable,
         label_visibility="visible",
         key=IVIT_ENABLE_CBX,
@@ -147,11 +154,12 @@ def add_ivit_section(session, header: str = "IVIT") -> None:
 
     # rulebase
     st.checkbox(
-        label="Rulebase Validation",
+        label="Judge Status with CSV Decision Rule",
         value=cfg.ivit.rulebase if session[IVIT_FROM_CSV_CBX] == True else False,
         label_visibility="visible",
         key=IVIT_RULEBASE_CBX,
         disabled=not session[IVIT_FROM_CSV_CBX],
+        help="The final status will come from the values ​​of iVIT and 'CSV Decision'",
     )
 
     # ivit mode
@@ -169,6 +177,7 @@ def add_ivit_section(session, header: str = "IVIT") -> None:
         if cfg.ivit.mode and cfg.ivit.mode in correct_opts
         else 0,
         label_visibility="collapsed",
+        format_func=handlers.st_formatter.upper_format_func,
     )
     if session[IVIT_MODE_RAD] == M_VAL:
         st.selectbox(
@@ -179,6 +188,7 @@ def add_ivit_section(session, header: str = "IVIT") -> None:
             if cfg.ivit.target_model
             else 0,
             label_visibility="collapsed",
+            format_func=handlers.st_formatter.upper_format_func,
         )
 
     # ivit model
