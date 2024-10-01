@@ -39,14 +39,13 @@ def detect(ismart_path: str) -> list:
 
     test_products = ismart.wmic.get_test_product()
 
-    return (
-        [
-            ismart.wmic.get_name_from_ismart(product, ismart_exec_path=ismart_path)
-            for product in test_products
-        ]
-        if test_products
-        else []
-    )
+    if not test_products:
+        return []
+
+    return [
+        ismart.wmic.get_name_from_ismart(product, ismart_exec_path=ismart_path)
+        for product in test_products
+    ]
 
 
 def mock_detect(ismart_path: str = "") -> list:
