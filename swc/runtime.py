@@ -317,7 +317,7 @@ def main(session: SessionStateProxy):
         handlers.ivit.validate(cfg=cfg)
         is_valid = True
     except Exception as e:
-        st.error(e)
+        st.exception(e)
 
     if not is_valid:
         return
