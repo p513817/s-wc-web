@@ -132,41 +132,45 @@ def ivit_event(session: SessionStateProxy) -> List[handlers.ivit.InferData]:
 # --------------------------------------------------
 
 
-def get_report_plot(reports):
+def get_report_plot(reports: List[handlers.reporter.Report]):
     # Start Report Event
     ret = []
     for report in reports:
         # Get Top 1 result
         data = report.data
         top1 = data.output[0]
+
+        thres = report.config_info.ivit.models.read.thres
+        if report.data.input.domain == "write":
+            thres = report.config_info.ivit.models.write.thres
+
         # For Plot
         ret.append(
             {
-                "status": report.status,
-                "data_path": handlers.reporter.image_to_base64(data.input.data_path),
-                "plot_path": handlers.reporter.image_to_base64(data.input.plot_path),
-                "verify_path": handlers.reporter.image_to_base64(
-                    data.input.verify_path
-                ),
-                "domain": data.input.domain,
-                "ai_verify": report.ai_verify,
-                "rule_verify": report.rule_verify,
-                "ground_truth": report.ground_truth,
-                "label": top1.label,
-                "confidence": top1.confidence,
+                "Status": report.status,
+                "Data Path": handlers.reporter.image_to_base64(data.input.data_path),
+                "Plot Path": handlers.reporter.image_to_base64(data.input.plot_path),
+                "Rule Path": handlers.reporter.image_to_base64(data.input.verify_path),
+                "Domain": str(data.input.domain).capitalize(),
+                "AI Verify": report.ai_verify,
+                "Rule Verify": report.rule_verify,
+                "Ground Truth": report.ground_truth,
+                "Label": top1.label,
+                "Confidence": top1.confidence,
+                "Threshold": thres,
             }
         )
     df = pd.DataFrame(ret)
     st.dataframe(
         df,
         column_config={
-            "data_path": st.column_config.ImageColumn("Data Image", width="small"),
-            "plot_path": st.column_config.ImageColumn("Plot Image", width="small"),
-            "verify_path": st.column_config.ImageColumn("Verify Image", width="small"),
+            "Data Path": st.column_config.ImageColumn("Data Image", width="small"),
+            "Plot Path": st.column_config.ImageColumn("Plot Image", width="small"),
+            "Rule Path": st.column_config.ImageColumn("Rule Image", width="small"),
         },
         use_container_width=True,
     )
-    status_counts = df["status"].value_counts()
+    status_counts = df["Status"].value_counts()
 
     # Status 統計: {'PASS': 14, 'FAIL': 3}
     # st.write(f"Status 統計: {status_counts.to_dict()}")
