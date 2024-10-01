@@ -2,6 +2,7 @@ import logging
 
 import streamlit as st
 
+import swc
 from swc import handlers
 from swc.handlers import config
 
@@ -59,7 +60,7 @@ DEBUG_AIDA_ENABLE_CBX = "debug_aida_enable_checkbox"
 def add_ssd_section(session, header: str = "SSD") -> None:
     cfg: config.Config = session[CFG]
 
-    st.subheader(header)
+    st.subheader(header, divider=True)
     st.radio(
         "Select SSD Mode",
         options=SSD_MODE_OPTS,
@@ -89,7 +90,7 @@ def add_ssd_section(session, header: str = "SSD") -> None:
 def add_aida_section(session, header: str = "AIDA64") -> None:
     cfg: config.Config = session[CFG]
 
-    st.subheader(header)
+    st.subheader(header, divider=True)
     st.checkbox(
         label=f"Enable {header}",
         value=cfg.aida.enable,
@@ -122,7 +123,7 @@ def add_aida_section(session, header: str = "AIDA64") -> None:
 
 def add_ivit_section(session, header: str = "DECISION RULE") -> None:
     cfg: config.Config = session[CFG]
-    st.subheader(header)
+    st.subheader(header, divider=True)
 
     st.checkbox(
         label="Enable CSV Decision Rule",
@@ -225,7 +226,7 @@ def add_ivit_section(session, header: str = "DECISION RULE") -> None:
 
 def add_output_section(session, header: str = "OUTPUT") -> None:
     cfg: config.Config = session[CFG]
-    st.subheader(header)
+    st.subheader(header, divider=True)
     st.text_input(
         label="Enter the retrain directory", key=RET_DIR_INP, value=cfg.output.retrain
     )
@@ -239,7 +240,7 @@ def add_output_section(session, header: str = "OUTPUT") -> None:
 
 def add_debug_section(session, header: str = "DEBUG") -> None:
     cfg: config.Config = session[CFG]
-    st.subheader(header)
+    st.subheader(header, divider=True)
     # enable
     st.checkbox(
         label="Mock SSD function for debug",
@@ -256,7 +257,8 @@ def add_debug_section(session, header: str = "DEBUG") -> None:
 
 
 def main(session):
-    st.title("Setting")
+    st.title("S-WC", help=f"S-WC Version: {swc.__version__}")
+    st.header("Setting")
     add_ssd_section(session)
     add_aida_section(session)
     add_ivit_section(session)

@@ -8,6 +8,8 @@ import streamlit as st
 from handlers import config, log
 from streamlit.runtime.state.session_state_proxy import SessionStateProxy
 
+import swc
+
 log.setup()
 logger = logging.getLogger(__name__)
 
@@ -98,7 +100,6 @@ def ivit_generatic_event(session: SessionStateProxy) -> List[handlers.ivit.Infer
 
 
 def ivit_validator_event(session: SessionStateProxy) -> List[handlers.ivit.InferData]:
-    st.info("Validator Mode")
     cfg: config.Config = session[CFG]
 
     # Get Data and Model Config
@@ -234,7 +235,6 @@ def validator_report_event(
     session: SessionStateProxy, infer_outputs: List[handlers.ivit.InferData]
 ):
     logger.info("Start Validator Report")
-    logger.info("Finished Validator Report")
     if cfg.ssd.mode == "detect":
         ground_truth = session[SSD_DETECT_SEL]
     else:
@@ -257,6 +257,7 @@ def validator_report_event(
     handlers.reporter.process_xml(reports=reports)
 
     get_report_plot(reports=reports)
+    logger.info("Finished Validator Report")
 
 
 def none_ivit_report_event(session: SessionStateProxy):
@@ -320,7 +321,8 @@ def main(session: SessionStateProxy):
     cfg: handlers.config.Config = session[CFG]
 
     # Title
-    st.title("Runtime")
+    st.title("S-WC", help=f"S-WC Version: {swc.__version__}")
+    st.header("Runtime")
 
     # Validate Each Feature
     is_valid = False
