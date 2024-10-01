@@ -1,5 +1,6 @@
 import logging
 import time
+from pathlib import Path
 
 from swc.thirdparty import ismart
 
@@ -19,6 +20,12 @@ def validation(cfg: config.Config):
         if cfg.ssd.mock_name in ["", None]:
             raise SSDError("SSD Mock Name is empty")
         logger.info(f"Validated mock mode: {cfg.ssd.mock_name}")
+    else:
+        ismart_path = Path(cfg.ssd.ismart_path)
+        if ismart_path.suffix != ".exe":
+            raise SSDError("Setup iSMART executable file error, should be *.exe")
+        if not ismart_path.exists():
+            raise SSDError("iSMART executable file not exists")
 
 
 def valid_detected_disks(disks: list):
