@@ -1,4 +1,5 @@
 import json
+import logging
 from pathlib import Path
 from typing import List, Literal, Optional
 
@@ -8,8 +9,6 @@ from pydantic import BaseModel
 
 from swc import thirdparty
 from swc.handlers import config
-import logging 
-
 
 logger = logging.getLogger(__name__)
 
@@ -149,6 +148,7 @@ def do_inference(
                 )
                 for (index, label, conf) in results
             ]
-            
-            ret.append(InferData(input=infer_data, output=infer_results))
+        else:
+            infer_results = [InferOutput()]
+        ret.append(InferData(input=infer_data, output=infer_results))
     return ret
