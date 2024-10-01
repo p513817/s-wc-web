@@ -1,2 +1,2 @@
 # from . import handlers, pages, thirdparty, validators
-__version__ = "v0.0.2"
+__version__ = "v0.0.3"
