@@ -96,7 +96,7 @@ def get_retrain_path(
     """
     root = Path(retrain_root)
     pn = "postivie" if status else "negative"
-    gt = ground_truth.replace('"', ' ')
+    gt = ground_truth.replace('"', " ")
     rw = get_rw_from_domain(domain).replace("_", "")
 
     dst_dir = root / pn / rw / gt
@@ -120,7 +120,7 @@ def get_current_path(
     """
     root = Path(current_root)
     pn = "postivie" if status else "negative"
-    gt = ground_truth.replace('"', ' ')
+    gt = ground_truth.replace('"', " ")
     rw = get_rw_from_domain(domain)
 
     src_fname = Path(data_path).name
@@ -146,7 +146,7 @@ def get_history_path(
                 - <data>
     """
     root = Path(history_root)
-    gt = ground_truth.replace('"', ' ')
+    gt = ground_truth.replace('"', " ")
     rw = get_rw_from_domain(domain)
 
     src_fname = Path(data_path).name
