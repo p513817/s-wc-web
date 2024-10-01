@@ -1,10 +1,13 @@
 import logging
+import os
 import subprocess as sp
 from pathlib import Path
-from typing import List, Tuple, Literal, Optional
-from . import ivit, config
+from typing import List, Literal, Tuple
+
 from swc import thirdparty
-import os
+
+from . import config, ivit
+
 logger = logging.getLogger(__name__)
 
 
@@ -17,7 +20,9 @@ class AIDAError(Exception):
 def mock_run_cmd(output_dir: str = ""):
     logger.info("Run mock AIDA")
     # 使用 Popen 來捕獲 stdout
-    fake_aida = Path(__file__).parent.parent.parent / "testing" / "fake_aida" / "fake_aida.py"
+    fake_aida = (
+        Path(__file__).parent.parent.parent / "testing" / "fake_aida" / "fake_aida.py"
+    )
 
     process = sp.Popen(
         [
@@ -70,6 +75,7 @@ def mock_run_cmd(output_dir: str = ""):
 
 #     return None
 
+
 def run_cmd(aida_exec_path: str):
     current_path = os.getcwd()
     logger.info("Run AIDA")
@@ -87,11 +93,12 @@ def run_cmd(aida_exec_path: str):
         raise AIDAError(f"Run AIDA64 Failed: {process.stderr}")
     if is_aida64_empty:
         raise AIDAError("Run AIDA64 Failed: Can not find any testing disk")
-    
+
     return None
 
+
 def validate(cfg: config.Config):
-    if not cfg.aida.enable:
+    if not cfg.aida.enable or cfg.debug.mock_aida_process:
         logger.warning("AIDA is disable")
         return
 
@@ -120,7 +127,7 @@ def valid_aida_output_folder(gen_folders: List[Path]) -> None:
     raise AIDAError("The AIDA output folder is not generated")
 
 
-def parse_aida_output_dir(folder: str, is_validator: bool=False) -> Tuple[List[Path]]:
+def parse_aida_output_dir(folder: str, is_validator: bool = False) -> Tuple[List[Path]]:
     """Parse images and csvs from AIDA Output Folder"""
     images, csvs = [], []
     for file in Path(folder).iterdir():
@@ -137,8 +144,9 @@ def parse_aida_output_dir(folder: str, is_validator: bool=False) -> Tuple[List[P
     return images, csvs
 
 
-
-def get_data_domain(data) -> Tuple[Literal["Linear Write", "Linear Read"], Literal["read", "write"]]:
+def get_data_domain(
+    data,
+) -> Tuple[Literal["Linear Write", "Linear Read"], Literal["read", "write"]]:
     if ivit.KW_R in str(data):
         return "Linear Read", "read"
     elif ivit.KW_W in str(data):
@@ -146,13 +154,15 @@ def get_data_domain(data) -> Tuple[Literal["Linear Write", "Linear Read"], Liter
     else:
         raise RuntimeError("Can not find keyword in data path")
 
+
 def get_data(
     cfg: config.Config,
 ) -> Tuple[List[ivit.InferInput], List[ivit.InferInput]]:
-
     # Get Mode
     is_csv_mode = not cfg.ivit.enable or (cfg.ivit.enable and cfg.ivit.from_csv)
-    logger.warning(f"Is CSV Mode: {is_csv_mode} ( iVIT: {cfg.ivit.enable}, iVIT From CSV: {cfg.ivit.from_csv})")
+    logger.warning(
+        f"Is CSV Mode: {is_csv_mode} ( iVIT: {cfg.ivit.enable}, iVIT From CSV: {cfg.ivit.from_csv})"
+    )
 
     # Get Correct Folder
     input_dir: Path | str = cfg.ivit.input_dir
@@ -162,9 +172,9 @@ def get_data(
         valid_aida_output_folder(gen_folders=input_dirs)
         input_dir = input_dirs[0]
         logger.info(f"Find input folder: {input_dir}")
-        
+
     # Get Correct Data
-    images, csvs = parse_aida_output_dir(input_dir, cfg.ivit.mode=="validator")
+    images, csvs = parse_aida_output_dir(input_dir, cfg.ivit.mode == "validator")
 
     # Get correct data and data type
     input_data_list: List[Path] = images
@@ -173,7 +183,11 @@ def get_data(
 
     # Verify Data
     if cfg.ivit.enable:
-        logging.info("Verify data ... Mode: {}, Image: {}, CSV: {}".format(cfg.ivit.mode, len(images), len(csvs)))
+        logging.info(
+            "Verify data ... Mode: {}, Image: {}, CSV: {}".format(
+                cfg.ivit.mode, len(images), len(csvs)
+            )
+        )
         if cfg.ivit.mode == "generatic" and len(input_data_list) != 2:
             raise RuntimeError("Generatic Mode only support 2 images or 2 csvs")
         elif cfg.ivit.mode == "validator" and len(input_data_list) == 0:
@@ -184,7 +198,6 @@ def get_data(
     output_plot_folder = Path(input_dir) / "plots"
     output_plot_folder.mkdir(parents=True, exist_ok=True)
     for data in input_data_list:
-        
         # Get data
         plot_keyword, domain = get_data_domain(data)
         plot_path = data_path = verify_path = str(data)
