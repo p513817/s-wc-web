@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import List, Literal, Optional
 
 import cv2
-import streamlit as st
 from pydantic import BaseModel
 
 from swc import thirdparty
@@ -119,7 +118,6 @@ def get_model_info(xml_path: str, config_path: str, label_path: str) -> InferMod
     )
 
 
-@st.cache_resource
 def get_model(
     _info: InferModelInfo,
 ) -> thirdparty.ivit_i.core.models.iClassification:
@@ -139,7 +137,8 @@ def do_inference(
         frame = cv2.imread(str(infer_data.data_path))
         if not from_csv:
             frame = thirdparty.process.shot_to_plot.process.process(frame)
-        if results := model.inference(frame):
+        results = model.inference(frame)
+        if results:
             infer_results = [
                 InferOutput(
                     index=index,
