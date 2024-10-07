@@ -219,6 +219,13 @@ def get_report(
         )
         reports.append(report)
 
+    # Update Ground Truth
+    for report in reports:
+        for label in report.model_info.labels:
+            dummy_ground_truth = report.ground_truth
+            if label in dummy_ground_truth:
+                report.ground_truth = label
+
     # Generatic 模式才有: 判斷 最終的狀態 rw_comp 並更新 path
     config = reports[0].config_info
     if config.ivit.enable and config.ivit.mode == "generatic":
