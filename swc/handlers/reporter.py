@@ -173,7 +173,9 @@ def get_report(
         # 判斷 iVIT 狀態
         ai_verify: Literal[True, False, None] = None
         if config_info.ivit.enable and data.output:
-            ai_verify = data.output[0].label == ground_truth
+            lower_label = data.output[0].label.lower()
+            lower_gt = ground_truth.lower()
+            ai_verify = lower_label in lower_gt
 
         # 判斷 rule 狀態
         rule_verify: Literal[True, False, None] = None
@@ -365,7 +367,8 @@ def process(
         src_file = src_path.stem
 
         # Check correct folder and Save Report
-        if report.from_csv:
+        is_ivit_enable = report.config_info.ivit.enable
+        if not is_ivit_enable or (is_ivit_enable and report.from_csv):
             src_dir = src_dir.parent
         json_path = src_dir / f"{src_file}.json"
         with open(json_path, "w", encoding="UTF-8") as f:
