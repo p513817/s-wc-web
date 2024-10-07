@@ -101,7 +101,6 @@ def get_retrain_path(
     rw = get_rw_from_domain(domain).replace("_", "")
 
     dst_dir = root / pn / rw / gt
-    dst_dir.mkdir(parents=True, exist_ok=True)
     return dst_dir
 
 
@@ -128,7 +127,6 @@ def get_current_path(
     sn = str(src_fname).split(rw)[0]
 
     dst_dir = root / f"{timestamp}_{sn}" / f"{gt}_{pn}"
-    dst_dir.mkdir(parents=True, exist_ok=True)
     return dst_dir
 
 
@@ -154,7 +152,6 @@ def get_history_path(
     sn = str(src_fname).split(rw)[0]
 
     dst_dir = root / gt / f"{timestamp}_{sn}"
-    dst_dir.mkdir(parents=True, exist_ok=True)
     return dst_dir
 
 
@@ -276,7 +273,8 @@ def copy_to_retrain(
     """
     for report in reports:
         # Get Correct Dstination (dst)
-        dst_dir = report.output_info.retrain
+        dst_dir = Path(report.output_info.retrain)
+        dst_dir.mkdir(parents=True, exist_ok=True)
 
         # Select Source File
         src_path = Path(report.data.input.data_path)
@@ -299,6 +297,7 @@ def copy_to_current(
     for report in reports:
         # Get Correct Dstination (dst)
         dst_dir = report.output_info.current
+        dst_dir.mkdir(parents=True, exist_ok=True)
 
         # Select Source File
         src_data_path = Path(report.data.input.data_path)
@@ -344,6 +343,7 @@ Date: {created_time}
         for report in reports:
             # Get Correct Dstination (dst)
             dst_dir = report.output_info.history
+            dst_dir.mkdir(parents=True, exist_ok=True)
 
             # Select Source File
             src_data_path = Path(report.data.input.data_path)
