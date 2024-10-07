@@ -49,6 +49,7 @@ def image_to_base64(image_path) -> str:
 
 
 class Report(BaseModel):
+    rw_comp: Literal["PASS", "FAIL", None] = None
     status: Literal["PASS", "FAIL"]
     ground_truth: str
     ai_verify: Optional[bool]
@@ -168,7 +169,9 @@ def get_report(
     config_info: config.Config,
     timestamp: int,
 ) -> List[Report]:
-    ret = []
+    reports: List[Report] = []
+
+    all_status = []
     for data in infer_data:
         # 判斷 iVIT 狀態
         ai_verify: Literal[True, False, None] = None
@@ -176,6 +179,7 @@ def get_report(
             lower_label = data.output[0].label.lower()
             lower_gt = ground_truth.lower()
             ai_verify = lower_label in lower_gt
+        all_status.append(ai_verify)
 
         # 判斷 rule 狀態
         rule_verify: Literal[True, False, None] = None
@@ -213,39 +217,49 @@ def get_report(
             config_info=config_info,
             created_time=timestamp,
         )
-        report.output_info.retrain = str(
-            get_retrain_path(
-                retrain_root=config_info.output.retrain,
-                status=report.status == "PASS",
-                ground_truth=report.ground_truth,
-                domain=data.input.domain,
-            )
-        )
-        report.output_info.current = str(
-            get_current_path(
-                current_root=config_info.output.current,
-                status=report.status == "PASS",
-                ground_truth=report.ground_truth,
-                domain=data.input.domain,
-                timestamp=report.created_time,
-                data_path=report.data.input.data_path,
-            )
-        )
-        report.output_info.history = str(
-            get_history_path(
-                history_root=config_info.output.history,
-                ground_truth=report.ground_truth,
-                domain=data.input.domain,
-                timestamp=report.created_time,
-                data_path=report.data.input.data_path,
-            )
-        )
+        reports.append(report)
 
-        ret.append(report)
-    return ret
+    # Generatic 模式才有: 判斷 最終的狀態 rw_comp 並更新 path
+    config = reports[0].config_info
+    if config.ivit.enable and config.ivit.mode == "generatic":
+        rw_comp = "FAIL" in all_status
+        for report in reports:
+            report.rw_comp = rw_comp
+
+            report.output_info.retrain = str(
+                get_retrain_path(
+                    retrain_root=config_info.output.retrain,
+                    status=report.rw_comp,
+                    ground_truth=report.ground_truth,
+                    domain=data.input.domain,
+                )
+            )
+            report.output_info.current = str(
+                get_current_path(
+                    current_root=config_info.output.current,
+                    status=report.rw_comp,
+                    ground_truth=report.ground_truth,
+                    domain=data.input.domain,
+                    timestamp=report.created_time,
+                    data_path=report.data.input.data_path,
+                )
+            )
+            report.output_info.history = str(
+                get_history_path(
+                    history_root=config_info.output.history,
+                    ground_truth=report.ground_truth,
+                    domain=data.input.domain,
+                    timestamp=report.created_time,
+                    data_path=report.data.input.data_path,
+                )
+            )
+
+    return reports
 
 
-def copy_to_retrain(reports: List[Report]):
+def copy_to_retrain(
+    reports: List[Report], rw_comp: Literal["PASS", "FAIL", None] = None
+):
     """
     Copy files to retrain folder
 
@@ -266,7 +280,9 @@ def copy_to_retrain(reports: List[Report]):
                 shutil.copy2(csv_path, dst_dir)
 
 
-def copy_to_current(reports: List[Report]):
+def copy_to_current(
+    reports: List[Report], rw_comp: Literal["PASS", "FAIL", None] = None
+):
     """
     Copy files to retrain folder
 
@@ -290,7 +306,9 @@ def copy_to_current(reports: List[Report]):
             shutil.copy2(related_file, dst_dir)
 
 
-def copy_to_history(reports: List[Report]):
+def copy_to_history(
+    reports: List[Report], rw_comp: Literal["PASS", "FAIL", None] = None
+):
     """
     Copy files to retrain folder
 
