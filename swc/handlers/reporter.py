@@ -228,7 +228,7 @@ def get_report(
     # Generatic 模式才有: 判斷 最終的狀態 rw_comp 並更新 path
     config = reports[0].config_info
     if config.ivit.enable and config.ivit.mode == "generatic":
-        rw_comp = "FAIL" not in all_status
+        rw_comp = False not in all_status
         for report in reports:
             report.rw_comp = rw_comp
 
