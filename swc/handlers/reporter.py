@@ -168,7 +168,6 @@ def get_report(
 ) -> List[Report]:
     reports: List[Report] = []
 
-    all_status = []
     for data in infer_data:
         # 判斷 iVIT 狀態
         ai_verify: Literal[True, False, None] = None
@@ -176,7 +175,6 @@ def get_report(
             lower_label = data.output[0].label.lower()
             lower_gt = ground_truth.lower()
             ai_verify = lower_label in lower_gt
-        all_status.append(ai_verify)
 
         # 判斷 rule 狀態
         rule_verify: Literal[True, False, None] = None
@@ -215,50 +213,6 @@ def get_report(
             created_time=timestamp,
         )
         reports.append(report)
-
-    # Update Ground Truth
-    for report in reports:
-        if not report.model_info:
-            continue
-        for label in report.model_info.labels:
-            dummy_ground_truth = report.ground_truth
-            if label in dummy_ground_truth:
-                report.ground_truth = label
-
-    # Generatic 模式才有: 判斷 最終的狀態 rw_comp 並更新 path
-    config = reports[0].config_info
-    if config.ivit.enable and config.ivit.mode == "generatic":
-        rw_comp = False not in all_status
-        for report in reports:
-            report.rw_comp = rw_comp
-
-            report.output_info.retrain = str(
-                get_retrain_path(
-                    retrain_root=config_info.output.retrain,
-                    status=report.rw_comp,
-                    ground_truth=report.ground_truth,
-                    domain=data.input.domain,
-                )
-            )
-            report.output_info.current = str(
-                get_current_path(
-                    current_root=config_info.output.current,
-                    status=report.rw_comp,
-                    ground_truth=report.ground_truth,
-                    domain=data.input.domain,
-                    timestamp=report.created_time,
-                    data_path=report.data.input.data_path,
-                )
-            )
-            report.output_info.history = str(
-                get_history_path(
-                    history_root=config_info.output.history,
-                    ground_truth=report.ground_truth,
-                    domain=data.input.domain,
-                    timestamp=report.created_time,
-                    data_path=report.data.input.data_path,
-                )
-            )
 
     return reports
 
@@ -309,10 +263,13 @@ def copy_to_current(
         src_name = str(src_data_path.stem).split(split_kw)[0] + split_kw
 
         src_dir = Path(report.data.input.data_path).parent
-        if report.config_info.ivit.from_csv:
+        if not report.config_info.ivit.enable or (
+            report.config_info.ivit.enable and report.config_info.ivit.from_csv
+        ):
             src_dir = src_dir.parent
 
         for related_file in src_dir.rglob(f"**/*{src_name}*"):
+            logger.debug(f"{related_file} -> {dst_dir}")
             shutil.copy2(related_file, dst_dir)
 
 
@@ -357,7 +314,9 @@ Date: {created_time}
             src_name = sn_name + split_kw
 
             src_dir = Path(report.data.input.data_path).parent
-            if report.config_info.ivit.from_csv:
+            if not report.config_info.ivit.enable or (
+                report.config_info.ivit.enable and report.config_info.ivit.from_csv
+            ):
                 src_dir = src_dir.parent
 
             for related_file in src_dir.rglob(f"**/*{src_name}*"):
@@ -388,6 +347,57 @@ Date: {created_time}
 def process(
     reports: List[Report],
 ):
+    # Update Ground Truth
+    all_status: List[Literal["PASS", "FAIL"]] = []
+    for report in reports:
+        all_status.append(report.status)
+
+        if not report.model_info:
+            continue
+
+        # Update ground truth when iVIT enable
+        for label in report.model_info.labels:
+            dummy_ground_truth = report.ground_truth
+            if label in dummy_ground_truth:
+                report.ground_truth = label
+
+    # Generatic 模式才有: 判斷 最終的狀態 rw_comp 並更新 path
+    config = reports[0].config_info
+    if not config.ivit.enable or (
+        config.ivit.enable and config.ivit.mode == "generatic"
+    ):
+        rw_comp_bool = "FAIL" not in all_status
+        for report in reports:
+            report.rw_comp = "PASS" if rw_comp_bool else "FAIL"
+
+            report.output_info.retrain = str(
+                get_retrain_path(
+                    retrain_root=report.config_info.output.retrain,
+                    status=rw_comp_bool,
+                    ground_truth=report.ground_truth,
+                    domain=report.data.input.domain,
+                )
+            )
+            report.output_info.current = str(
+                get_current_path(
+                    current_root=report.config_info.output.current,
+                    status=rw_comp_bool,
+                    ground_truth=report.ground_truth,
+                    domain=report.data.input.domain,
+                    timestamp=report.created_time,
+                    data_path=report.data.input.data_path,
+                )
+            )
+            report.output_info.history = str(
+                get_history_path(
+                    history_root=report.config_info.output.history,
+                    ground_truth=report.ground_truth,
+                    domain=report.data.input.domain,
+                    timestamp=report.created_time,
+                    data_path=report.data.input.data_path,
+                )
+            )
+
     for report in reports:
         # Get Top 1 result
         data = report.data
