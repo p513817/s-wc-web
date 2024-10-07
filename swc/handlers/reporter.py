@@ -96,7 +96,7 @@ def get_retrain_path(
                     - <data>
     """
     root = Path(retrain_root)
-    pn = "postivie" if status else "negative"
+    pn = "positive" if status else "negative"
     gt = ground_truth.replace('"', " ")
     rw = get_rw_from_domain(domain).replace("_", "")
 
@@ -119,7 +119,7 @@ def get_current_path(
                 - <data>
     """
     root = Path(current_root)
-    pn = "postivie" if status else "negative"
+    pn = "positive" if status else "negative"
     gt = ground_truth.replace('"', " ")
     rw = get_rw_from_domain(domain)
 
@@ -282,7 +282,9 @@ def copy_to_retrain(
         src_path = Path(report.data.input.data_path)
 
         shutil.copy2(src_path, dst_dir)
-        if report.config_info.ivit.from_csv:
+        if not report.config_info.ivit.enable or (
+            report.config_info.ivit.enable and report.config_info.ivit.from_csv
+        ):
             for csv_path in src_path.parent.parent.glob("*.csv"):
                 shutil.copy2(csv_path, dst_dir)
 
