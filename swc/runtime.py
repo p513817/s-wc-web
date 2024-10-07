@@ -141,10 +141,11 @@ def ivit_event(session: SessionStateProxy) -> List[handlers.ivit.InferData]:
 # --------------------------------------------------
 
 
-def get_report_plot(reports: List[handlers.reporter.Report]):
+@st.cache_data
+def get_report_plot(_reports: List[handlers.reporter.Report]):
     # Start Report Event
     ret = []
-    for report in reports:
+    for report in _reports:
         # Get Top 1 result
         data = report.data
         top1 = data.output[0]
@@ -227,7 +228,7 @@ def generatic_report_event(
     handlers.reporter.process(reports=reports)
 
     # Gen Plot
-    get_report_plot(reports=reports)
+    get_report_plot(reports)
     logger.info("Finished Generatice Report")
 
 
@@ -256,7 +257,7 @@ def validator_report_event(
     # Save to CSV
     handlers.reporter.process_xml(reports=reports)
 
-    get_report_plot(reports=reports)
+    get_report_plot(reports)
     logger.info("Finished Validator Report")
 
 
@@ -295,7 +296,7 @@ def none_ivit_report_event(session: SessionStateProxy):
     reports = list(map(report_wrapper, infer_outputs))
     # Process Report
     handlers.reporter.process(reports=reports)
-    get_report_plot(reports=reports)
+    get_report_plot(reports)
 
     logger.info("Finished None iVIT Report")
 
