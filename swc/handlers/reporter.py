@@ -218,6 +218,8 @@ def get_report(
 
     # Update Ground Truth
     for report in reports:
+        if not report.model_info:
+            continue
         for label in report.model_info.labels:
             dummy_ground_truth = report.ground_truth
             if label in dummy_ground_truth:
@@ -296,7 +298,7 @@ def copy_to_current(
     """
     for report in reports:
         # Get Correct Dstination (dst)
-        dst_dir = report.output_info.current
+        dst_dir = Path(report.output_info.current)
         dst_dir.mkdir(parents=True, exist_ok=True)
 
         # Select Source File
@@ -327,6 +329,7 @@ def copy_to_history(
 
     # Re-Write Log for history
     history_log_path = Path(output_history_dir) / f"{today}.log"
+    history_log_path.parent.mkdir(parents=True, exist_ok=True)
 
     log_file = open(history_log_path, "a", encoding="utf-8")
 
@@ -342,7 +345,7 @@ Date: {created_time}
 
         for report in reports:
             # Get Correct Dstination (dst)
-            dst_dir = report.output_info.history
+            dst_dir = Path(report.output_info.history)
             dst_dir.mkdir(parents=True, exist_ok=True)
 
             # Select Source File
@@ -395,6 +398,7 @@ def process(
         is_ivit_enable = report.config_info.ivit.enable
         if not is_ivit_enable or (is_ivit_enable and report.from_csv):
             src_dir = src_dir.parent
+
         json_path = src_dir / f"{src_file}.json"
         with open(json_path, "w", encoding="UTF-8") as f:
             json.dump(report.model_dump(), f, ensure_ascii=False, indent=4)
