@@ -51,4 +51,4 @@ def detect(ismart_path: str) -> list:
 def mock_detect(ismart_path: str = "") -> list:
     logger.warning("Detect ssd with mock mode")
     time.sleep(1)
-    return ["4TG2-P", "3TE6"]
+    return ['Innodisk 2.5" 4TG2-P', "Innodisk (4P0) 3TE6"]
