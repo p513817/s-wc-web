@@ -132,6 +132,14 @@ def add_ivit_section(session, header: str = "DECISION RULE") -> None:
         disabled=True,
     )
 
+    # input image directory
+    if session[SSD_MODE_RAD] == "mock" or not session[AIDA_ENABLE_CBX]:
+        st.text_input(
+            label="Input Image / CSV directory",
+            key=IVIT_IMAGE_DIR_INP,
+            value=cfg.ivit.input_dir,
+        )
+
     # enable
     st.checkbox(
         label="Enable iVIT",
@@ -141,14 +149,6 @@ def add_ivit_section(session, header: str = "DECISION RULE") -> None:
     )
     if not session[IVIT_ENABLE_CBX]:
         return
-
-    # input image directory
-    if session[SSD_MODE_RAD] == "mock" or not session[AIDA_ENABLE_CBX]:
-        st.text_input(
-            label="Input Image / CSV directory",
-            key=IVIT_IMAGE_DIR_INP,
-            value=cfg.ivit.input_dir,
-        )
 
     # from csv
     st.checkbox(
@@ -313,11 +313,11 @@ def main(session):
         # Validation and Save
         is_valid = False
         try:
-            handlers.ssd.validation(cfg=cfg)
-            if cfg.aida.enable:
+            if not cfg.debug.mock_ssd_process:
+                handlers.ssd.validation(cfg=cfg)
+            if not cfg.debug.mock_aida_process:
                 handlers.aida.validate(cfg=cfg)
-            if cfg.ivit.enable:
-                handlers.ivit.validate(cfg=cfg)
+            handlers.ivit.validate(cfg=cfg)
             config.save(cfg.model_dump())
             is_valid = True
         except Exception as e:

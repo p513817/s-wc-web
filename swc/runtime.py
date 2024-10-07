@@ -327,8 +327,11 @@ def main(session: SessionStateProxy):
     # Validate Each Feature
     is_valid = False
     try:
-        handlers.ssd.validation(cfg=cfg)
-        handlers.aida.validate(cfg=cfg)
+        if not cfg.debug.mock_ssd_process:
+            handlers.ssd.validation(cfg=cfg)
+        if not cfg.debug.mock_aida_process:
+            handlers.aida.validate(cfg=cfg)
+
         handlers.ivit.validate(cfg=cfg)
         is_valid = True
     except Exception as e:
