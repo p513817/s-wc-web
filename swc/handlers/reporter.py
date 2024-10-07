@@ -239,7 +239,8 @@ def copy_to_retrain(
         if not report.config_info.ivit.enable or (
             report.config_info.ivit.enable and report.config_info.ivit.from_csv
         ):
-            for csv_path in src_path.parent.parent.glob("*.csv"):
+            keyword = "_R" if report.data.input.domain == "read" else "_W"
+            for csv_path in src_path.parent.parent.glob(f"*{keyword}*.csv"):
                 shutil.copy2(csv_path, dst_dir)
 
 
