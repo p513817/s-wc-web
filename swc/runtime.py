@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import List, Optional
 
 import handlers
 import pandas as pd
@@ -17,6 +17,7 @@ SSD_DETECT_SEL = "ssd_detect_selectbox"
 KW_R = "_R"
 KW_W = "_W"
 CFG = "config"
+DPLOT = "plot_data"
 
 # --------------------------------------------------
 
@@ -141,10 +142,15 @@ def ivit_event(session: SessionStateProxy) -> List[handlers.ivit.InferData]:
 # --------------------------------------------------
 
 
-def get_report_plot(_reports: List[handlers.reporter.Report]):
+def get_report_plot(
+    session: SessionStateProxy, reports: Optional[List[handlers.reporter.Report]] = None
+):
+    if reports is None:
+        st.text("Click the start button ...")
+        return
     # Start Report Event
     ret = []
-    for report in _reports:
+    for report in reports:
         # Get Top 1 result
         data = report.data
         top1 = data.output[0]
@@ -227,8 +233,9 @@ def generatic_report_event(
     handlers.reporter.process(reports=reports)
 
     # Gen Plot
-    get_report_plot(reports)
+    # get_report_plot(session, reports)
     logger.info("Finished Generatice Report")
+    return reports
 
 
 def validator_report_event(
@@ -256,8 +263,9 @@ def validator_report_event(
     # Save to CSV
     handlers.reporter.process_xml(reports=reports)
 
-    get_report_plot(reports)
+    # get_report_plot(session, reports)
     logger.info("Finished Validator Report")
+    return reports
 
 
 def none_ivit_report_event(session: SessionStateProxy):
@@ -295,11 +303,10 @@ def none_ivit_report_event(session: SessionStateProxy):
     reports = list(map(report_wrapper, infer_outputs))
     # Process Report
     handlers.reporter.process(reports=reports)
-    get_report_plot(reports)
+    # get_report_plot(session, reports)
 
     logger.info("Finished None iVIT Report")
-
-    pass
+    return reports
 
 
 def report_event(session: SessionStateProxy, infer_outputs=None):
@@ -320,28 +327,24 @@ def main(session: SessionStateProxy):
 
     cfg: handlers.config.Config = session[CFG]
 
+    # Cache plot data
+    if DPLOT not in session:
+        session[DPLOT] = None
+
     # Title
     st.title("S-WC", help=f"S-WC Version: {swc.__version__}")
     st.header("Runtime")
 
-    # Validate Each Feature
-    is_valid = False
-    try:
-        if not cfg.debug.mock_ssd_process:
-            handlers.ssd.validation(cfg=cfg)
-        if not cfg.debug.mock_aida_process:
-            handlers.aida.validate(cfg=cfg)
-
-        handlers.ivit.validate(cfg=cfg)
-        is_valid = True
-    except Exception as e:
-        st.exception(e)
-
-    if not is_valid:
-        return
-
     # Run Each Feature
     try:
+        with st.spinner("Validating ..."):
+            if not cfg.debug.mock_ssd_process:
+                handlers.ssd.validation(cfg=cfg)
+            if not cfg.debug.mock_aida_process:
+                handlers.aida.validate(cfg=cfg)
+            handlers.ivit.validate(cfg=cfg)
+            st.toast("Validate SSD, AIDA, iVIT ... Finished !")
+
         with st.spinner("Detecting SSD ..."):
             ssd_event(session)
 
@@ -362,7 +365,9 @@ def main(session: SessionStateProxy):
             aida_event(session)
             infer_outputs = ivit_event(session)
 
-            report_event(session, infer_outputs)
+            session[DPLOT] = report_event(session, infer_outputs)
+
+        get_report_plot(session, session[DPLOT])
 
     except Exception as e:
         logger.exception(e)
