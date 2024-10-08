@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 from typing import List, Optional
 
 import handlers
@@ -54,7 +55,12 @@ def aida_event(session: SessionStateProxy):
     # Run AIDA
     with st.spinner("Running AIDA64"):
         if cfg.debug.mock_aida_process:
+            temp_out_dir = Path("temp")
+            temp_out_dir.mkdir(parents=True, exist_ok=True)
+            cfg.aida.out_dir = str(temp_out_dir)
+            cfg.aida.dir_kw = "aida"
             handlers.aida.mock_run_cmd(output_dir=cfg.aida.out_dir)
+            logger.warning(f"Mock AIDA process, update output_dir: {cfg.aida.out_dir}")
         else:
             handlers.aida.run_cmd(aida_exec_path=cfg.aida.exec_path)
     # Verify Folder
