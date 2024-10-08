@@ -78,6 +78,10 @@ def get_daily_timestamp_for_history() -> int:
     return int(dt.now().strftime("%y%m%d"))
 
 
+def get_current_timestamp_for_retrain() -> int:
+    return int(dt.now().strftime("%y%m%d%H%M%S"))
+
+
 def get_rw_from_domain(domain: str) -> Literal["_R", "_W"]:
     return "_R" if domain == "read" else "_W"
 
@@ -168,13 +172,6 @@ def get_report(
 ) -> List[Report]:
     reports: List[Report] = []
 
-    # 更新 Mock SSD
-    if config_info.ssd.mode == "mock":
-        logger.warning(
-            f"Update Ground Truth: {ground_truth} -> {config_info.ssd.mock_name}"
-        )
-        ground_truth = config_info.ssd.mock_name
-
     # Update ground truth when iVIT enable
     if model_info:
         dummy_ground_truth = ground_truth
@@ -241,7 +238,15 @@ def copy_to_retrain(
     Include:
         1. CSV File
         2. Plot file or Screenshot
+
+    Important:
+        * Add timestamp
     """
+    tt = get_current_timestamp_for_retrain()
+
+    def rename(file_path: Path, dst_dir: Path) -> Path:
+        return dst_dir / f"{tt}_{file_path.name}"
+
     for report in reports:
         # Get Correct Dstination (dst)
         dst_dir = Path(report.output_info.retrain)
@@ -249,14 +254,15 @@ def copy_to_retrain(
 
         # Select Source File
         src_path = Path(report.data.input.data_path)
+        shutil.copy2(src_path, rename(src_path, dst_dir))
 
-        shutil.copy2(src_path, dst_dir)
+        # Only Pure CSV or iVIT From CSV have to copy CSV File
         if not report.config_info.ivit.enable or (
             report.config_info.ivit.enable and report.config_info.ivit.from_csv
         ):
             keyword = "_R" if report.data.input.domain == "read" else "_W"
             for csv_path in src_path.parent.parent.glob(f"*{keyword}*.csv"):
-                shutil.copy2(csv_path, dst_dir)
+                shutil.copy2(csv_path, rename(csv_path, dst_dir))
 
 
 def copy_to_current(
@@ -363,76 +369,80 @@ Date: {created_time}
 def process(
     reports: List[Report],
 ):
-    # Update Ground Truth
-    all_status: List[Literal["PASS", "FAIL"]] = []
-    for report in reports:
-        all_status.append(report.status)
-
-        if not report.model_info:
-            continue
-
     # Generatic 模式才有: 判斷 最終的狀態 rw_comp 並更新 path
     config = reports[0].config_info
-    if config.ssd.mode == "detect" and (
+    flag = config.ssd.mode == "detect" and (
         not config.ivit.enable
         or (config.ivit.enable and config.ivit.mode == "generatic")
-    ):
-        rw_comp_bool = "FAIL" not in all_status
-        for report in reports:
-            report.rw_comp = "PASS" if rw_comp_bool else "FAIL"
+    )
+    if not flag:
+        logger.warning("No need to process, does something went wrong?")
+        logger.warning(
+            f"SSD Mode: {config.ssd.mode}, iVIT: {config.ivit.enable}, Mode: {config.ivit.mode}"
+        )
+        return
 
-            report.output_info.retrain = str(
-                get_retrain_path(
-                    retrain_root=report.config_info.output.retrain,
-                    status=rw_comp_bool,
-                    ground_truth=report.ground_truth,
-                    domain=report.data.input.domain,
-                )
-            )
-            report.output_info.current = str(
-                get_current_path(
-                    current_root=report.config_info.output.current,
-                    status=rw_comp_bool,
-                    ground_truth=report.ground_truth,
-                    domain=report.data.input.domain,
-                    timestamp=report.created_time,
-                    data_path=report.data.input.data_path,
-                )
-            )
-            report.output_info.history = str(
-                get_history_path(
-                    history_root=report.config_info.output.history,
-                    ground_truth=report.ground_truth,
-                    domain=report.data.input.domain,
-                    timestamp=report.created_time,
-                    data_path=report.data.input.data_path,
-                )
-            )
+    # Get RW_COMP
+    all_status: List[Literal["PASS", "FAIL"]] = [report.status for report in reports]
+    rw_comp_bool = "FAIL" not in all_status
+    rw_comp = "PASS" if rw_comp_bool else "FAIL"
+    logger.info(f"Get RW_COMP: {rw_comp_bool} ({rw_comp})")
 
     for report in reports:
+        # Update RW_COMP
+        report.rw_comp = rw_comp
+        # Update Retrain, Current, History Path
+        report.output_info.retrain = str(
+            get_retrain_path(
+                retrain_root=report.config_info.output.retrain,
+                status=rw_comp_bool,
+                ground_truth=report.ground_truth,
+                domain=report.data.input.domain,
+            )
+        )
+        report.output_info.current = str(
+            get_current_path(
+                current_root=report.config_info.output.current,
+                status=rw_comp_bool,
+                ground_truth=report.ground_truth,
+                domain=report.data.input.domain,
+                timestamp=report.created_time,
+                data_path=report.data.input.data_path,
+            )
+        )
+        report.output_info.history = str(
+            get_history_path(
+                history_root=report.config_info.output.history,
+                ground_truth=report.ground_truth,
+                domain=report.data.input.domain,
+                timestamp=report.created_time,
+                data_path=report.data.input.data_path,
+            )
+        )
+
+        # ---------------------------------------------------------
+
         # Get Top 1 result
         data = report.data
-
         src_path = Path(data.input.data_path)
         src_dir = src_path.parent
         src_file = src_path.stem
-
         # Check correct folder and Save Report
         is_ivit_enable = report.config_info.ivit.enable
         if not is_ivit_enable or (is_ivit_enable and report.from_csv):
             src_dir = src_dir.parent
 
+        # Save json file in current path
         json_path = src_dir / f"{src_file}.json"
         with open(json_path, "w", encoding="UTF-8") as f:
             json.dump(report.model_dump(), f, ensure_ascii=False, indent=4)
         logger.info(f"Save report to {json_path}")
 
-    cfg = reports[0].config_info
-    if not cfg.ivit.enable or (cfg.ivit.enable and cfg.ivit.mode == "generatic"):
-        copy_to_retrain(reports=reports)
-        copy_to_current(reports=reports)
-        copy_to_history(reports=reports)
-        logger.info("Copy to target folers")
+    # Copy to Retrain, Current, History
+    copy_to_retrain(reports=reports)
+    copy_to_current(reports=reports)
+    copy_to_history(reports=reports)
+    logger.info("Copy to target folers")
 
 
 class DqeXmlHandler:
