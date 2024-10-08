@@ -278,9 +278,6 @@ def none_ivit_report_event(session: SessionStateProxy):
         ground_truth = cfg.ssd.mock_name
     timestamp = handlers.reporter.get_timetamp()
 
-    logger.debug(read_inputs)
-    logger.debug(write_inputs)
-
     # Gen InferData
     infer_outputs: List[handlers.ivit.InferData] = [
         handlers.ivit.InferData(
