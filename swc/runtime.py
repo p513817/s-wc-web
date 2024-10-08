@@ -141,7 +141,6 @@ def ivit_event(session: SessionStateProxy) -> List[handlers.ivit.InferData]:
 # --------------------------------------------------
 
 
-@st.cache_data
 def get_report_plot(_reports: List[handlers.reporter.Report]):
     # Start Report Event
     ret = []
