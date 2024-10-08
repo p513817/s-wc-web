@@ -169,6 +169,10 @@ def get_report(
     reports: List[Report] = []
 
     for data in infer_data:
+        # 更新 Mock SSD
+        if config_info.ssd.mode == "mock":
+            ground_truth = config_info.ssd.mock_name
+
         # 判斷 iVIT 狀態
         ai_verify: Literal[True, False, None] = None
         if config_info.ivit.enable and data.output:
