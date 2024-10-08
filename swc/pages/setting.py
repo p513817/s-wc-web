@@ -138,6 +138,7 @@ def add_ivit_section(session, header: str = "DECISION RULE") -> None:
             label="Input Image / CSV directory",
             key=IVIT_IMAGE_DIR_INP,
             value=cfg.ivit.input_dir,
+            placeholder=r"C:\Users\DQE\Desktop\data\aida64v730_2CY12312250010038",
         )
 
     # enable
@@ -209,6 +210,7 @@ def add_ivit_section(session, header: str = "DECISION RULE") -> None:
             label=f"IVIT Model Directory :: {R.upper()}",
             value=cfg.ivit.models.read.model_dir,
             key=IVIT_RMDL_DIR_INP,
+            placeholder=r"C:\Users\DQE\Desktop\model\read_model",
         )
         st.slider(
             label="Threshold", value=cfg.ivit.models.read.thres, key=IVIT_RMDL_THRES
@@ -218,6 +220,7 @@ def add_ivit_section(session, header: str = "DECISION RULE") -> None:
             label=f"IVIT Model Directory :: {W.upper()}",
             value=cfg.ivit.models.write.model_dir,
             key=IVIT_WMDL_DIR_INP,
+            placeholder=r"C:\Users\DQE\Desktop\model\write_model",
         )
         st.slider(
             label="Threshold", value=cfg.ivit.models.write.thres, key=IVIT_WMDL_THRES
@@ -228,13 +231,22 @@ def add_output_section(session, header: str = "OUTPUT") -> None:
     cfg: config.Config = session[CFG]
     st.subheader(header, divider=True)
     st.text_input(
-        label="Enter the retrain directory", key=RET_DIR_INP, value=cfg.output.retrain
+        label="Enter the retrain directory",
+        key=RET_DIR_INP,
+        value=cfg.output.retrain,
+        placeholder=r"C:\Users\DQE\Desktop\s-wc-web\retrain",
     )
     st.text_input(
-        label="Enter the current directory", key=CUR_DIR_INP, value=cfg.output.current
+        label="Enter the current directory",
+        key=CUR_DIR_INP,
+        value=cfg.output.current,
+        placeholder=r"C:\Users\DQE\Desktop\s-wc-web\current",
     )
     st.text_input(
-        label="Enter the history directory", key=HIS_DIR_INP, value=cfg.output.history
+        label="Enter the history directory",
+        key=HIS_DIR_INP,
+        value=cfg.output.history,
+        placeholder=r"C:\Users\DQE\Desktop\s-wc-web\history",
     )
 
 
