@@ -1,2 +1,2 @@
 # from . import handlers, pages, thirdparty, validators
-__version__ = "b0.0.5-gamma"
+__version__ = "v0.0.5"
