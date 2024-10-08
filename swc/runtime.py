@@ -244,11 +244,16 @@ def validator_report_event(
         ground_truth = cfg.ssd.mock_name
     timestamp = handlers.reporter.get_timetamp()
 
+    if cfg.ivit.target_model == "read":
+        model_info = get_model_info(cfg.ivit.models.read)
+    else:
+        model_info = get_model_info(cfg.ivit.models.write)
+
     def report_wrapper(infer_data):
         return handlers.reporter.get_report(
             infer_data=[infer_data],
             ground_truth=ground_truth,
-            model_info=None,
+            model_info=model_info,
             config_info=cfg,
             timestamp=timestamp,
         )[0]

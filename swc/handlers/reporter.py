@@ -168,17 +168,28 @@ def get_report(
 ) -> List[Report]:
     reports: List[Report] = []
 
-    for data in infer_data:
-        # 更新 Mock SSD
-        if config_info.ssd.mode == "mock":
-            ground_truth = config_info.ssd.mock_name
+    # 更新 Mock SSD
+    if config_info.ssd.mode == "mock":
+        logger.warning(
+            f"Update Ground Truth: {ground_truth} -> {config_info.ssd.mock_name}"
+        )
+        ground_truth = config_info.ssd.mock_name
 
-        # 判斷 iVIT 狀態
+    # Update ground truth when iVIT enable
+    if model_info:
+        dummy_ground_truth = ground_truth
+        for label in model_info.labels:
+            if label in dummy_ground_truth:
+                logger.warning(f"Update Ground Truth: {ground_truth} -> {label}")
+                ground_truth = label
+
+    for data in infer_data:
+        # 判斷 iVIT 狀態 並更新 Ground Truth
         ai_verify: Literal[True, False, None] = None
         if config_info.ivit.enable and data.output:
-            lower_label = data.output[0].label.lower()
+            lower_detected = data.output[0].label.lower()
             lower_gt = ground_truth.lower()
-            ai_verify = lower_label in lower_gt
+            ai_verify = lower_detected in lower_gt
 
         # 判斷 rule 狀態
         rule_verify: Literal[True, False, None] = None
@@ -359,12 +370,6 @@ def process(
 
         if not report.model_info:
             continue
-
-        # Update ground truth when iVIT enable
-        for label in report.model_info.labels:
-            dummy_ground_truth = report.ground_truth
-            if label in dummy_ground_truth:
-                report.ground_truth = label
 
     # Generatic 模式才有: 判斷 最終的狀態 rw_comp 並更新 path
     config = reports[0].config_info
