@@ -368,8 +368,9 @@ def process(
 
     # Generatic 模式才有: 判斷 最終的狀態 rw_comp 並更新 path
     config = reports[0].config_info
-    if not config.ivit.enable or (
-        config.ivit.enable and config.ivit.mode == "generatic"
+    if config.ssd.mode == "detect" and (
+        not config.ivit.enable
+        or (config.ivit.enable and config.ivit.mode == "generatic")
     ):
         rw_comp_bool = "FAIL" not in all_status
         for report in reports:
