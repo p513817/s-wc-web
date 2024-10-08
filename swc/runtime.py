@@ -65,7 +65,6 @@ def aida_event(session: SessionStateProxy):
         gen_folders[0], cfg.ivit.mode == "validator"
     )
 
-    st.balloons()
     st.toast("AIDA Finished")
 
 
@@ -134,7 +133,6 @@ def ivit_event(session: SessionStateProxy) -> List[handlers.ivit.InferData]:
             res = ivit_generatic_event(session)
         else:
             res = ivit_validator_event(session)
-    st.balloons()
     st.toast("Decision Rule Finished")
     return res
 
@@ -231,9 +229,7 @@ def generatic_report_event(
     reports = list(map(report_wrapper, infer_outputs))
     # Process Report
     handlers.reporter.process(reports=reports)
-
     # Gen Plot
-    # get_report_plot(session, reports)
     logger.info("Finished Generatice Report")
     return reports
 
@@ -263,7 +259,6 @@ def validator_report_event(
     # Save to CSV
     handlers.reporter.process_xml(reports=reports)
 
-    # get_report_plot(session, reports)
     logger.info("Finished Validator Report")
     return reports
 
@@ -303,7 +298,6 @@ def none_ivit_report_event(session: SessionStateProxy):
     reports = list(map(report_wrapper, infer_outputs))
     # Process Report
     handlers.reporter.process(reports=reports)
-    # get_report_plot(session, reports)
 
     logger.info("Finished None iVIT Report")
     return reports
@@ -326,10 +320,6 @@ def main(session: SessionStateProxy):
     """
 
     cfg: handlers.config.Config = session[CFG]
-
-    # Cache plot data
-    if DPLOT not in session:
-        session[DPLOT] = None
 
     # Title
     st.title("S-WC", help=f"S-WC Version: {swc.__version__}")
@@ -364,10 +354,9 @@ def main(session: SessionStateProxy):
         ):
             aida_event(session)
             infer_outputs = ivit_event(session)
-
-            session[DPLOT] = report_event(session, infer_outputs)
-
-        get_report_plot(session, session[DPLOT])
+            reports = report_event(session, infer_outputs)
+            st.balloons()
+            get_report_plot(session, reports)
 
     except Exception as e:
         logger.exception(e)
