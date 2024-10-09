@@ -183,13 +183,15 @@ def get_report(
     for data in infer_data:
         # Get Top1 Data
         top1 = data.output[0]
-        logger.debug(top1)
         # 判斷 iVIT 狀態 並更新 Ground Truth
         ai_verify: Literal[True, False, None] = None
-        if config_info.ivit.enable and data.output and top1.label:
-            lower_detected = top1.label.lower()
-            lower_gt = ground_truth.lower()
-            ai_verify = lower_detected in lower_gt
+        if config_info.ivit.enable:
+            if data.output and top1.label:
+                lower_detected = top1.label.lower()
+                lower_gt = ground_truth.lower()
+                ai_verify = lower_detected in lower_gt
+            else:
+                ai_verify = False
 
         # 判斷 rule 狀態
         rule_verify: Literal[True, False, None] = None
