@@ -181,10 +181,13 @@ def get_report(
                 ground_truth = label
 
     for data in infer_data:
+        # Get Top1 Data
+        top1 = data.output[0]
+        logger.debug(top1)
         # 判斷 iVIT 狀態 並更新 Ground Truth
         ai_verify: Literal[True, False, None] = None
-        if config_info.ivit.enable and data.output:
-            lower_detected = data.output[0].label.lower()
+        if config_info.ivit.enable and data.output and top1.label:
+            lower_detected = top1.label.lower()
             lower_gt = ground_truth.lower()
             ai_verify = lower_detected in lower_gt
 
@@ -215,8 +218,8 @@ def get_report(
             ground_truth=ground_truth,
             rule_verify=rule_verify,
             ai_verify=ai_verify,
-            detected=data.output[0].label,
-            confidence=data.output[0].confidence,
+            detected=top1.label,
+            confidence=top1.confidence,
             from_csv=config_info.ivit.from_csv,
             data=data,
             model_info=model_info,
